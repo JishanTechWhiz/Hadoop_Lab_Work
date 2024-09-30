@@ -1,0 +1,556 @@
+
+<------------------------1)------------------------>
+->
+
+package wordCountz;
+
+import java.io.IOException;
+import java.util.StringTokenizer;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
+
+
+public class WordCount {
+
+	public static class Map extends Mapper<LongWritable, Text, Text,IntWritable>
+	{
+		public void map(LongWritable key,Text value,Context context)throws IOException ,InterruptedException 
+		{
+			String line=value.toString();
+			StringTokenizer token=new StringTokenizer(line);
+			while(token.hasMoreElements()) {
+				value.set(token.nextToken());
+				context.write(value, new IntWritable(1));
+			}
+		}
+	}
+	public static class Reduce extends Reducer<Text, IntWritable, Text, IntWritable>
+	{   
+		public void reduce(Text key,Iterable<IntWritable> value ,Context context) throws  IOException ,InterruptedException
+		{
+			int sum=0;
+			for (IntWritable i:value) {
+				sum+=i.get();
+				
+			}
+			context.write(key,new IntWritable(sum));
+		}
+		
+	}
+	public static void main(String args[]) throws Exception {
+		Configuration conf=new Configuration();
+		Job job = Job.getInstance(conf, "WordCount");/* crate a job */
+		job.setJarByClass(WordCount.class);
+		job.setMapperClass(Map.class);
+		job.setReducerClass(Reduce.class);
+		
+		job.setMapOutputKeyClass(Text.class);
+		job.setMapOutputValueClass(IntWritable.class);
+		
+		job.setOutputKeyClass(Text.class);
+		job.setOutputValueClass(IntWritable.class);
+		
+		job.setInputFormatClass(TextInputFormat.class);
+		job.setOutputFormatClass(TextOutputFormat.class);
+		
+		Path outputPath=new Path(args[1]);
+		FileInputFormat.addInputPath(job, new Path(args[0]));
+		FileOutputFormat.setOutputPath(job, new Path(args[1]));
+		
+		outputPath.getFileSystem(conf).delete(outputPath, true);
+		System.exit(job.waitForCompletion(true)?0:1);
+		
+			
+		
+		
+	}
+}
+
+
+
+<------------------------2)------------------------>
+->
+
+package myDemoz;
+
+import java.io.IOException;
+import java.util.StringTokenizer;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
+
+
+public class myDemoz {
+
+	public static class Map extends Mapper<LongWritable, Text, Text,IntWritable>
+	{
+		Text year = new Text();
+		IntWritable temperature = new IntWritable();
+		
+		public void map(LongWritable key,Text value,Context context)throws IOException ,InterruptedException 
+		{
+			String line = value.toString();
+			String[] arr = line.split(" ");
+			
+			if(arr.length==2) {
+				year.set(arr[0]);
+				temperature.set(Integer.parseInt(arr[1]));
+				
+				context.write(year, temperature);
+			}
+			
+		}
+	}
+	public static class Reduce extends Reducer<Text, IntWritable, Text, IntWritable>
+	{   
+		public void reduce(Text key,Iterable<IntWritable> value ,Context context) throws  IOException ,InterruptedException
+		{
+			int minTemperature = Integer.MAX_VALUE;
+			for(IntWritable tempe:value) {
+				if(tempe.get() < minTemperature) {
+					minTemperature = tempe.get();
+				}
+				
+			}
+			
+			context.write(key, new IntWritable(minTemperature));
+		}
+		
+	}
+	public static void main(String args[]) throws Exception {
+		Configuration conf=new Configuration();
+		Job job = Job.getInstance(conf, "Min Temperature");/* crate a job */
+		job.setJarByClass(myDemoz.class);
+		job.setMapperClass(Map.class);
+		job.setReducerClass(Reduce.class);
+		
+		job.setMapOutputKeyClass(Text.class);
+		job.setMapOutputValueClass(IntWritable.class);
+		
+		job.setOutputKeyClass(Text.class);
+		job.setOutputValueClass(IntWritable.class);
+		
+		job.setInputFormatClass(TextInputFormat.class);
+		job.setOutputFormatClass(TextOutputFormat.class);
+		
+		Path outputPath=new Path(args[1]);
+		FileInputFormat.addInputPath(job, new Path(args[0]));
+		FileOutputFormat.setOutputPath(job, new Path(args[1]));
+		
+		outputPath.getFileSystem(conf).delete(outputPath, true);
+		System.exit(job.waitForCompletion(true)?0:1);
+		
+		
+		
+		
+		
+		
+		
+	}
+}
+
+<------------------------3)------------------------>
+->
+
+package myDemoz;
+
+import java.io.IOException;
+import java.util.StringTokenizer;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
+
+
+public class myDemoz {
+
+	public static class Map extends Mapper<LongWritable, Text, Text,IntWritable>
+	{
+		
+		public void map(LongWritable key,Text value,Context context)throws IOException ,InterruptedException 
+		{
+			String line = value.toString();
+			StringTokenizer token = new StringTokenizer(line);
+			
+			while(token.hasMoreTokens()) {
+				value.set(token.nextToken());
+				context.write(value, new IntWritable(1));
+			}
+			
+		}
+	}
+	public static class Reduce extends Reducer<Text, IntWritable, Text, DoubleWritable>
+	{   
+		int totalToken=0;
+		double totalCount=0;
+		public void reduce(Text key,Iterable<IntWritable> value ,Context context) throws  IOException ,InterruptedException
+		{
+			
+			int sum=0;
+			
+			for(IntWritable val : value) {
+				sum = sum+val.get();
+			}
+			context.write(key, new DoubleWritable(sum));
+			
+			totalToken++;
+			totalCount = totalCount+sum;
+			
+			
+		}
+		
+		//The cleanup() method is called once after all the reduce() operations have been completed, and it is an ideal place to perform this kind of final calculation.
+		
+		public void cleanup(Context context) throws IOException,InterruptedException{
+			double averageCount =  totalCount / totalToken;
+			
+			context.write(new Text("Average Token Count"), new DoubleWritable(averageCount));
+		}
+		
+		
+		
+		
+	}
+	public static void main(String args[]) throws Exception {
+		Configuration conf=new Configuration();
+		Job job = Job.getInstance(conf, "Average Count");/* crate a job */
+		job.setJarByClass(myDemoz.class);
+		job.setMapperClass(Map.class);
+		job.setReducerClass(Reduce.class);
+		
+		job.setMapOutputKeyClass(Text.class);
+		job.setMapOutputValueClass(IntWritable.class);
+		
+		job.setOutputKeyClass(Text.class);
+		job.setOutputValueClass(DoubleWritable.class);
+		
+		job.setInputFormatClass(TextInputFormat.class);
+		job.setOutputFormatClass(TextOutputFormat.class);
+		
+		Path outputPath=new Path(args[1]);
+		FileInputFormat.addInputPath(job, new Path(args[0]));
+		FileOutputFormat.setOutputPath(job, new Path(args[1]));
+		
+		outputPath.getFileSystem(conf).delete(outputPath, true);
+		System.exit(job.waitForCompletion(true)?0:1);
+		
+		
+		
+		
+		
+		
+		
+	}
+}
+
+<------------------------4)------------------------>
+->
+
+package myDemoz;
+
+import java.io.IOException;
+import java.util.StringTokenizer;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
+
+
+public class myDemoz {
+
+	public static class Map extends Mapper<LongWritable, Text, Text,IntWritable>
+	{
+		
+		public void map(LongWritable key,Text value,Context context)throws IOException ,InterruptedException 
+		{
+			String line = value.toString();
+			StringTokenizer token = new StringTokenizer(line);
+			
+			while(token.hasMoreTokens()) {
+				String currentToken = token.nextToken();
+				
+				if(currentToken.length() >= 4) {
+					context.write(new Text(currentToken), new IntWritable(1));
+				}
+				
+			}
+			
+		}
+	}
+	public static class Reduce extends Reducer<Text, IntWritable, Text, IntWritable>
+	{   
+		IntWritable result = new IntWritable();
+		public void reduce(Text key,Iterable<IntWritable> value ,Context context) throws  IOException ,InterruptedException
+		{
+			int sum=0;
+			for(IntWritable var:value) {
+				sum = sum + var.get();
+			}
+			result.set(sum);
+			context.write(key,result);
+			
+			
+		}
+		
+		//The cleanup() method is called once after all the reduce() operations have been completed, and it is an ideal place to perform this kind of final calculation.
+		public void cleanup(Context context) throws IOException,InterruptedException{
+			context.write(new Text("Total Count for Token"), result);
+		}
+		
+		
+		
+		
+	}
+	public static void main(String args[]) throws Exception {
+		Configuration conf=new Configuration();
+		Job job = Job.getInstance(conf, "Total Count Token");/* crate a job */
+		job.setJarByClass(myDemoz.class);
+		job.setMapperClass(Map.class);
+		job.setReducerClass(Reduce.class);
+		
+		job.setMapOutputKeyClass(Text.class);
+		job.setMapOutputValueClass(IntWritable.class);
+		
+		job.setOutputKeyClass(Text.class);
+		job.setOutputValueClass(IntWritable.class);
+		
+		job.setInputFormatClass(TextInputFormat.class);
+		job.setOutputFormatClass(TextOutputFormat.class);
+		
+		Path outputPath=new Path(args[1]);
+		FileInputFormat.addInputPath(job, new Path(args[0]));
+		FileOutputFormat.setOutputPath(job, new Path(args[1]));
+		
+		outputPath.getFileSystem(conf).delete(outputPath, true);
+		System.exit(job.waitForCompletion(true)?0:1);
+		
+		
+		
+		
+		
+		
+		
+	}
+}
+
+
+<------------------------5)------------------------>
+->
+
+
+package myDemoz;
+
+import java.io.IOException;
+import java.util.StringTokenizer;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
+
+
+public class myDemoz {
+
+	public static class Map extends Mapper<LongWritable, Text, Text,IntWritable>
+	{
+		
+		
+		public void map(LongWritable key,Text value,Context context)throws IOException ,InterruptedException 
+		{
+			String line = value.toString();
+			String[] arr = line.split(",");
+			
+			if(arr.length>3 && arr[2].equalsIgnoreCase("female")) {
+				
+				context.write(new Text(arr[2]), new IntWritable(1));
+			}
+			
+		}
+	}
+	public static class Reduce extends Reducer<Text, IntWritable, Text, IntWritable>
+	{   
+		public void reduce(Text key,Iterable<IntWritable> value ,Context context) throws  IOException ,InterruptedException
+		{
+			int sum=0;
+			for(IntWritable var:value) {
+				sum = sum+var.get();
+			}
+			context.write(new Text("No of female voters are "), new IntWritable(sum));
+			
+		}
+		
+	}
+	public static void main(String args[]) throws Exception {
+		Configuration conf=new Configuration();
+		Job job = Job.getInstance(conf, "Count Female Voters");/* crate a job */
+		job.setJarByClass(myDemoz.class);
+		job.setMapperClass(Map.class);
+		job.setReducerClass(Reduce.class);
+		
+		job.setMapOutputKeyClass(Text.class);
+		job.setMapOutputValueClass(IntWritable.class);
+		
+		job.setOutputKeyClass(Text.class);
+		job.setOutputValueClass(IntWritable.class);
+		
+		job.setInputFormatClass(TextInputFormat.class);
+		job.setOutputFormatClass(TextOutputFormat.class);
+		
+		Path outputPath=new Path(args[1]);
+		FileInputFormat.addInputPath(job, new Path(args[0]));
+		FileOutputFormat.setOutputPath(job, new Path(args[1]));
+		
+		outputPath.getFileSystem(conf).delete(outputPath, true);
+		System.exit(job.waitForCompletion(true)?0:1);
+		
+		
+		
+		
+		
+		
+		
+	}
+}
+
+<------------------------6)------------------------>
+->
+
+
+package myDemoz;
+
+import java.io.IOException;
+import java.util.StringTokenizer;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
+
+
+public class myDemoz {
+
+	public static class Map extends Mapper<LongWritable, Text, Text,IntWritable>
+	{
+		
+		
+		public void map(LongWritable key,Text value,Context context)throws IOException ,InterruptedException 
+		{
+			String[] col = value.toString().split(",");
+			
+			String userID = col[0];
+			
+				context.write(new Text(userID), new IntWritable(1));
+			
+			
+		}
+	}
+	public static class Reduce extends Reducer<Text, IntWritable, Text, IntWritable>
+	{   
+		public void reduce(Text key,Iterable<IntWritable> value ,Context context) throws  IOException ,InterruptedException
+		{
+			int sum =0;
+			for(IntWritable var:value) {
+				sum = sum+var.get();
+			}
+			
+			context.write(key, new IntWritable(sum));
+			
+		}
+		
+	}
+	public static void main(String args[]) throws Exception {
+		Configuration conf=new Configuration();
+		Job job = Job.getInstance(conf, "Musical Instrument Reviews Count");/* crate a job */
+		job.setJarByClass(myDemoz.class);
+		job.setMapperClass(Map.class);
+		job.setReducerClass(Reduce.class);
+		
+		job.setMapOutputKeyClass(Text.class);
+		job.setMapOutputValueClass(IntWritable.class);
+		
+		job.setOutputKeyClass(Text.class);
+		job.setOutputValueClass(IntWritable.class);
+		
+		job.setInputFormatClass(TextInputFormat.class);
+		job.setOutputFormatClass(TextOutputFormat.class);
+		
+		Path outputPath=new Path(args[1]);
+		FileInputFormat.addInputPath(job, new Path(args[0]));
+		FileOutputFormat.setOutputPath(job, new Path(args[1]));
+		
+		outputPath.getFileSystem(conf).delete(outputPath, true);
+		System.exit(job.waitForCompletion(true)?0:1);
+		
+		
+		
+		
+		
+		
+		
+	}
+}
+
+
+
+
+
+
+
+
